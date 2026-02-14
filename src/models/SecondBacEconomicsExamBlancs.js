@@ -20,3 +20,4 @@ SecondBacEconomicsExamBlancsSchema.set('toJSON', {
 
 export default mongoose.models.SecondBacEconomicsExamBlancs || mongoose.model('SecondBacEconomicsExamBlancs', SecondBacEconomicsExamBlancsSchema);
 
+

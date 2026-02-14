@@ -20,3 +20,4 @@ SecondBacMathBExamBlancsSchema.set('toJSON', {
 
 export default mongoose.models.SecondBacMathBExamBlancs || mongoose.model('SecondBacMathBExamBlancs', SecondBacMathBExamBlancsSchema);
 
+

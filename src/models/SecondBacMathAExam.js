@@ -21,3 +21,4 @@ SecondBacMathAExamSchema.set('toJSON', {
 
 export default mongoose.models.SecondBacMathAExam || mongoose.model('SecondBacMathAExam', SecondBacMathAExamSchema);
 
+

@@ -20,3 +20,4 @@ SecondBacTechExamBlancsSchema.set('toJSON', {
 
 export default mongoose.models.SecondBacTechExamBlancs || mongoose.model('SecondBacTechExamBlancs', SecondBacTechExamBlancsSchema);
 
+

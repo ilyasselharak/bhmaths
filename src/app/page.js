@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 // AdSense Ad Component - Commented out until AdSense approval
 // function AdSenseAd({ adSlot, className = '' }) {
@@ -83,6 +83,76 @@ const pricingPlans = [
   }
 ];
 
+// Countdown Timer Component
+function ExamCountdown() {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0
+  });
+
+  useEffect(() => {
+    const targetDate = new Date('2026-06-04T00:00:00').getTime();
+
+    const updateCountdown = () => {
+      const now = new Date().getTime();
+      const difference = targetDate - now;
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+          minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
+          seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      } else {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+      }
+    };
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const timeUnits = [
+    { label: 'Jours', value: timeLeft.days },
+    { label: 'Heures', value: timeLeft.hours },
+    { label: 'Minutes', value: timeLeft.minutes },
+    { label: 'Secondes', value: timeLeft.seconds }
+  ];
+
+  return (
+    <div className="bg-gradient-to-br from-red-500 to-orange-500 text-white rounded-2xl p-8 md:p-12 mb-12 mx-4 shadow-xl">
+      <div className="max-w-5xl mx-auto text-center">
+        <h2 className="text-2xl md:text-3xl font-bold mb-2">
+          ⏰ Compte à rebours pour l'Examen National
+        </h2>
+        <p className="text-lg md:text-xl mb-8 opacity-95">
+          Date de l'examen : 04 Juin 2026
+        </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {timeUnits.map((unit, index) => (
+            <div key={index} className="bg-white/20 backdrop-blur-sm rounded-xl p-4 md:p-6 border-2 border-white/30">
+              <div className="text-3xl md:text-5xl font-bold mb-2">
+                {String(unit.value).padStart(2, '0')}
+              </div>
+              <div className="text-sm md:text-base font-semibold opacity-90">
+                {unit.label}
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="mt-6 text-base md:text-lg opacity-90">
+          Préparez-vous dès maintenant avec nos ressources complètes !
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function HomePage() {
 
   const generateWhatsAppMessage = (planName, price, period) => {
@@ -134,6 +204,9 @@ export default function HomePage() {
         </div>
 
         <div className="max-w-7xl mx-auto px-4">
+          {/* Exam Countdown Timer */}
+          <ExamCountdown />
+
           {/* AdSense Banner Ad - Top - Commented out until AdSense approval */}
           {/* <AdSenseAd adSlot="1234567890" className="mb-8 flex justify-center" /> */}
 
