@@ -18,6 +18,9 @@ import SecondBacPhysicsChemistryLifeSciencesCourse from "@/models/SecondBacPhysi
 import SecondBacTechnicalCommonCourse from "@/models/SecondBacTechnicalCommonCourse";
 import SecondBacEconomicsCourse from "@/models/SecondBacEconomicsCourse";
 
+// Cache each course page at the edge for 1 hour, regenerate in background after.
+export const revalidate = 3600;
+
 const levelTitles = {
   firstCollege: "1ère année collège",
   secondCollege: "2ème année collège",

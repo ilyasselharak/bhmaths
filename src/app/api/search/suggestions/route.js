@@ -101,7 +101,14 @@ export async function GET(request) {
       })
       .slice(0, limit);
 
-    return NextResponse.json({ suggestions: suggestionsArray });
+    return NextResponse.json(
+      { suggestions: suggestionsArray },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      }
+    );
   } catch (error) {
     console.error('Suggestions Error:', error);
     return NextResponse.json({ suggestions: [] });

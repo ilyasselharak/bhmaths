@@ -22,15 +22,22 @@ export async function GET(request) {
       .limit(limit)
       .lean();
 
-    return NextResponse.json({
-      books,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit)
+    return NextResponse.json(
+      {
+        books,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
+      },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+        },
       }
-    });
+    );
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(

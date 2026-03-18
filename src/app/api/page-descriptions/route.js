@@ -36,7 +36,11 @@ export async function GET(request) {
       );
     }
 
-    return NextResponse.json(pageDescription);
+    return NextResponse.json(pageDescription, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800',
+      },
+    });
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(

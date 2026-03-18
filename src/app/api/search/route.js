@@ -135,11 +135,14 @@ export async function GET(request) {
       return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    return NextResponse.json({
-      query,
-      results: uniqueResults,
-      count: uniqueResults.length
-    });
+    return NextResponse.json(
+      { query, results: uniqueResults, count: uniqueResults.length },
+      {
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        },
+      }
+    );
   } catch (error) {
     console.error('Search Error:', error);
     return NextResponse.json(

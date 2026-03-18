@@ -73,8 +73,11 @@ export async function GET(request) {
     }
 
     const courses = await getCourses(level);
-    console.log(courses,level);
-    return NextResponse.json(courses);
+    return NextResponse.json(courses, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (error) {
     console.error('Database Error:', error);
     return NextResponse.json(

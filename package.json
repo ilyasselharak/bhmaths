@@ -11,7 +11,6 @@
     "seed-page-descriptions": "node -r esm src/scripts/seed-page-descriptions.js"
   },
   "dependencies": {
-    "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.17",
     "bcryptjs": "^3.0.2",
     "jsonwebtoken": "^9.0.2",

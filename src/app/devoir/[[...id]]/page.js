@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { initMongoose } from '@/lib/mongoose';
 
 // Import all devoir models

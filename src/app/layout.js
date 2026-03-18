@@ -1,6 +1,4 @@
 import { Inter } from 'next/font/google'
-import Script from 'next/script'
-import { Analytics } from '@vercel/analytics/react'
 import './globals.css'
 import TopHeader from '@/components/TopHeader'
 import MainHeader from '@/components/MainHeader'
@@ -47,13 +45,6 @@ export default function RootLayout({ children }) {
   return (
     <html lang="fr" className={inter.className}>
       <body>
-        {/* AdSense Script - Commented out until AdSense approval */}
-         <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3523606019399197"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        /> 
         <AuthProvider>
           <TopHeader />
           <MainHeader />
@@ -61,7 +52,6 @@ export default function RootLayout({ children }) {
           {children}
           <Footer />
         </AuthProvider>
-        <Analytics />
       </body>
     </html>
   )

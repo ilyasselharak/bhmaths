@@ -1,3 +1,5 @@
+export const revalidate = 3600;
+
 import { initMongoose } from '@/lib/mongoose';
 import Link from 'next/link';
 import Image from 'next/image';
