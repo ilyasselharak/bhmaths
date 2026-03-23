@@ -2,9 +2,42 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '@/app/context/AuthContext';
+
+const NAV_ITEMS = [
+  {
+    name: 'Tronc Commun',
+    href: '/secondary/class1',
+    sections: [
+      { name: 'Sciences', href: '/secondary/class1/sciences', course: '/course/TroncCommunSc', exercice: '/exercice/TroncCommunSc', devoir: '/devoir/TroncCommunSc' },
+      { name: 'Lettres', href: '/secondary/class1/lettres', course: '/course/TroncCommunLettres', exercice: '/exercice/TroncCommunLettres', devoir: '/devoir/TroncCommunLettres' },
+      { name: 'Technique', href: '/secondary/class1/technique', course: '/course/TroncCommunTech', exercice: '/exercice/TroncCommunTech', devoir: '/devoir/TroncCommunTech' },
+    ],
+  },
+  {
+    name: '1ère Bac',
+    href: '/secondary/class2',
+    sections: [
+      { name: 'Sciences Maths', href: '/secondary/class2/sciences-math', course: '/course/firstBacMath', exercice: '/exercice/firstBacMath', devoir: '/devoir/firstBacMath' },
+      { name: 'Sciences PC-SVT', href: '/secondary/class2/pc-svt', course: '/course/firstBacScience', exercice: '/exercice/firstBacScience', devoir: '/devoir/firstBacSc' },
+      { name: 'Lettres', href: '/secondary/class2/lettres', course: '/course/firstBacLetters', exercice: '/exercice/firstBacLetters', devoir: '/devoir/firstBacLettres' },
+      { name: 'Économie', href: '/secondary/class2/economie', course: '/course/firstBacEconomics', exercice: '/exercice/firstBacEconomics', devoir: '/devoir/firstBacEconomics' },
+    ],
+  },
+  {
+    name: '2ème Bac',
+    href: '/secondary/class3',
+    sections: [
+      { name: 'Mathématiques A', href: '/secondary/class3/math-a', course: '/course/2BacMathA', exercice: '/exercice/2BacMathA', devoir: '/devoir/2BacMathA' },
+      { name: 'Mathématiques B', href: '/secondary/class3/math-b', course: '/course/2BacMathB', exercice: '/exercice/2BacMathB', devoir: '/devoir/2BacMath' },
+      { name: 'PC-SVT', href: '/secondary/class3/pc-svt', course: '/course/2BacPCSVT', exercice: '/exercice/2BacPCSVT', devoir: '/devoir/2BacPCSVT' },
+      { name: 'Technologies', href: '/secondary/class3/technologies', course: '/course/2BacTCT', exercice: '/exercice/2BacTCT', devoir: '/devoir/2BacTech' },
+      { name: 'Économie', href: '/secondary/class3/ECO', course: '/course/2BacEco', exercice: '/exercice/2BacEco', devoir: '/devoir/2BacEco' },
+    ],
+  },
+];
 
 export default function MainHeader() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -12,48 +45,66 @@ export default function MainHeader() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [openMobileSection, setOpenMobileSection] = useState(null);
   const { user, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
   const searchInputRef = useRef(null);
   const suggestionsRef = useRef(null);
   const mobileMenuRef = useRef(null);
 
-  // Fetch suggestions as user types
+  // Scroll detection for glass effect
   useEffect(() => {
-    const fetchSuggestions = async () => {
+    const onScroll = () => setIsScrolled(window.scrollY > 10);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  // Debounced search suggestions
+  useEffect(() => {
+    const timer = setTimeout(async () => {
       if (searchQuery.trim().length < 2) {
         setSuggestions([]);
         setShowSuggestions(false);
         return;
       }
-
       try {
-        const response = await fetch(
-          `/api/search/suggestions?q=${encodeURIComponent(searchQuery.trim())}&limit=5`
-        );
-        if (response.ok) {
-          const data = await response.json();
+        const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(searchQuery.trim())}&limit=5`);
+        if (res.ok) {
+          const data = await res.json();
           setSuggestions(data.suggestions || []);
-          setShowSuggestions(data.suggestions && data.suggestions.length > 0);
+          setShowSuggestions((data.suggestions || []).length > 0);
           setSelectedIndex(-1);
         }
-      } catch (error) {
-        console.error('Error fetching suggestions:', error);
+      } catch {
         setSuggestions([]);
       }
-    };
-
-    const debounceTimer = setTimeout(() => {
-      fetchSuggestions();
-    }, 300); // Debounce for 300ms
-
-    return () => clearTimeout(debounceTimer);
+    }, 300);
+    return () => clearTimeout(timer);
   }, [searchQuery]);
+
+  // Close suggestions on outside click
+  useEffect(() => {
+    const handler = (e) => {
+      if (suggestionsRef.current?.contains(e.target) || searchInputRef.current?.contains(e.target)) return;
+      setShowSuggestions(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Lock body scroll when mobile menu open
+  useEffect(() => {
+    document.body.style.overflow = isMobileMenuOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isMobileMenuOpen]);
 
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       setShowSuggestions(false);
+      setIsMobileMenuOpen(false);
       router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
     }
   };
@@ -61,452 +112,290 @@ export default function MainHeader() {
   const handleSuggestionClick = (suggestion) => {
     setSearchQuery(suggestion.text);
     setShowSuggestions(false);
+    setIsMobileMenuOpen(false);
     router.push(`/search?q=${encodeURIComponent(suggestion.text)}`);
   };
 
   const handleKeyDown = (e) => {
-    if (!showSuggestions || suggestions.length === 0) return;
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : prev
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex((prev) => (prev > 0 ? prev - 1 : -1));
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && selectedIndex < suggestions.length) {
-          handleSuggestionClick(suggestions[selectedIndex]);
-        } else {
-          handleSearch(e);
-        }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        break;
-    }
+    if (!showSuggestions || !suggestions.length) return;
+    if (e.key === 'ArrowDown') { e.preventDefault(); setSelectedIndex(p => Math.min(p + 1, suggestions.length - 1)); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); setSelectedIndex(p => Math.max(p - 1, -1)); }
+    else if (e.key === 'Enter') { e.preventDefault(); selectedIndex >= 0 ? handleSuggestionClick(suggestions[selectedIndex]) : handleSearch(e); }
+    else if (e.key === 'Escape') { setShowSuggestions(false); setSelectedIndex(-1); }
   };
 
-  // Close suggestions when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        suggestionsRef.current &&
-        !suggestionsRef.current.contains(event.target) &&
-        searchInputRef.current &&
-        !searchInputRef.current.contains(event.target)
-      ) {
-        setShowSuggestions(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        mobileMenuRef.current &&
-        !mobileMenuRef.current.contains(event.target) &&
-        !event.target.closest('[data-mobile-menu-button]')
-      ) {
-        setIsMobileMenuOpen(false);
-      }
-    };
-
-    if (isMobileMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.body.style.overflow = 'unset';
-    };
-  }, [isMobileMenuOpen]);
-
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
-
-  const handleLogout = () => {
-    logout();
-    setIsMobileMenuOpen(false);
-  };
+  const isActive = (href) => pathname === href || pathname.startsWith(href + '/');
 
   return (
     <>
-      <div className="bg-white border-b">
+      {/* Main sticky header */}
+      <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${isScrolled ? 'glass shadow-md shadow-slate-900/5' : 'bg-white border-b border-slate-100'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16 md:h-20">
+          <div className="flex items-center h-16 gap-4">
+
             {/* Logo */}
-            <Link href="/" className="flex items-center flex-shrink-0">
-              <Image
-                src="/bhmaths.png"
-                alt="BHMaths"
-                width={120}
-                height={80}
-                className="h-10 md:h-32 w-auto"
-                priority
-              />
+            <Link href="/" className="flex-shrink-0">
+              <Image src="/bhmaths.png" alt="BHMaths" width={120} height={60} className="h-10 w-auto" priority />
             </Link>
 
-            {/* Search Bar - Hidden on mobile, shown on tablet+ */}
-            <div className="hidden md:flex flex-1 max-w-2xl mx-8 relative">
-              <form onSubmit={handleSearch} className="relative w-full">
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  onFocus={() => {
-                    if (suggestions.length > 0) {
-                      setShowSuggestions(true);
-                    }
-                  }}
-                  placeholder="Rechercher des cours, exercices..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-orange-500"
-                >
-                  <svg
-                    className="h-5 w-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+            {/* Desktop nav (md+) */}
+            <nav className="hidden md:flex items-center gap-1 ml-2">
+              {NAV_ITEMS.map((item) => (
+                <div key={item.name} className="dropdown-trigger relative">
+                  <Link
+                    href={item.href}
+                    className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      isActive(item.href)
+                        ? 'text-orange-600 bg-orange-50'
+                        : 'text-slate-600 hover:text-orange-600 hover:bg-orange-50'
+                    }`}
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                    {item.name}
+                    <svg className="h-3.5 w-3.5 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </Link>
+
+                  {/* Dropdown */}
+                  <div className="dropdown-menu absolute top-full left-0 mt-1.5 w-52 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                    {item.sections.map((sec) => (
+                      <Link
+                        key={sec.href}
+                        href={sec.href}
+                        className="flex items-center justify-between px-4 py-2.5 text-sm text-slate-700 hover:text-orange-600 hover:bg-orange-50 transition-colors group"
+                      >
+                        <span className="font-medium">{sec.name}</span>
+                        <svg className="h-3.5 w-3.5 text-slate-300 group-hover:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ))}
+
+              <Link
+                href="/livres"
+                className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${isActive('/livres') ? 'text-orange-600 bg-orange-50' : 'text-slate-600 hover:text-orange-600 hover:bg-orange-50'}`}
+              >
+                Les Livres
+              </Link>
+            </nav>
+
+            {/* Search bar */}
+            <div className="hidden md:flex flex-1 max-w-md ml-auto relative">
+              <form onSubmit={handleSearch} className="w-full">
+                <div className="relative">
+                  <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
-                </button>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    onFocus={() => suggestions.length && setShowSuggestions(true)}
+                    placeholder="Rechercher cours, exercices..."
+                    className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all placeholder-slate-400"
+                  />
+                </div>
               </form>
 
-              {/* Suggestions Dropdown */}
               {showSuggestions && suggestions.length > 0 && (
-                <div
-                  ref={suggestionsRef}
-                  className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-80 overflow-y-auto"
-                >
-                  {suggestions.map((suggestion, index) => (
+                <div ref={suggestionsRef} className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-100 rounded-xl shadow-xl z-50 overflow-hidden">
+                  {suggestions.map((s, i) => (
                     <button
-                      key={`${suggestion.id}-${index}`}
+                      key={`${s.id}-${i}`}
                       type="button"
-                      onClick={() => handleSuggestionClick(suggestion)}
-                      className={`w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors ${
-                        index === selectedIndex ? 'bg-orange-50' : ''
-                      } ${index !== suggestions.length - 1 ? 'border-b border-gray-100' : ''}`}
+                      onClick={() => handleSuggestionClick(s)}
+                      className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center justify-between gap-3 ${i === selectedIndex ? 'bg-orange-50' : 'hover:bg-slate-50'} ${i < suggestions.length - 1 ? 'border-b border-slate-50' : ''}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-gray-800">
-                            {suggestion.text}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {suggestion.levelName}
-                          </p>
-                        </div>
-                        <svg
-                          className="h-4 w-4 text-gray-400"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
+                      <div>
+                        <p className="font-medium text-slate-800">{s.text}</p>
+                        <p className="text-xs text-slate-400 mt-0.5">{s.levelName}</p>
                       </div>
+                      <svg className="h-4 w-4 text-slate-300 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Mobile Search Icon */}
-            <button
-              onClick={() => router.push('/search')}
-              className="md:hidden p-2 text-gray-600 hover:text-orange-500"
-              aria-label="Search"
-            >
-              <svg
-                className="h-6 w-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                />
-              </svg>
-            </button>
-
-            {/* Desktop Right Section */}
-            <div className="hidden md:flex items-center space-x-4">
-              <Link
-                href="/contact"
-                className="text-gray-600 hover:text-orange-500 font-medium"
-              >
+            {/* Desktop auth */}
+            <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+              <Link href="/contact" className="px-3 py-2 text-sm font-medium text-slate-600 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors">
                 Contact
               </Link>
               {user ? (
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <img
-                      src={user.avatar}
-                      alt={user.fullName || user.username}
-                      className="h-8 w-8 rounded-full"
-                    />
-                    <span className="text-gray-700 font-medium">
-                      {user.fullName || user.username}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Link
-                      href="/profile"
-                      className="text-gray-600 hover:text-orange-500 font-medium px-3 py-2 rounded-lg hover:bg-orange-50 transition-colors"
-                    >
-                      Profil
-                    </Link>
-                    <button
-                      onClick={logout}
-                      className="text-gray-600 hover:text-orange-500 font-medium px-3 py-2 rounded-lg hover:bg-orange-50 transition-colors"
-                    >
-                      Déconnexion
-                    </button>
-                  </div>
+                <div className="flex items-center gap-2">
+                  <Link href="/profile" className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors">
+                    <img src={user.avatar} alt={user.fullName || user.username} className="h-7 w-7 rounded-full ring-2 ring-orange-100" />
+                    <span className="text-sm font-medium text-slate-700">{user.fullName || user.username}</span>
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="px-3 py-2 text-sm font-medium text-slate-500 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+                  >
+                    Déconnexion
+                  </button>
                 </div>
               ) : (
-                <div className="flex items-center space-x-4">
-                  <Link
-                    href="/login"
-                    className="text-gray-600 hover:text-orange-500 font-medium"
-                  >
+                <div className="flex items-center gap-2">
+                  <Link href="/login" className="px-4 py-2 text-sm font-medium text-slate-700 hover:text-orange-600 rounded-lg hover:bg-orange-50 transition-colors">
                     Connexion
                   </Link>
-                  <Link
-                    href="/register"
-                    className="bg-orange-500 text-white px-4 py-2 rounded-md hover:bg-orange-600 transition-colors"
-                  >
+                  <Link href="/register" className="btn-primary text-sm px-4 py-2">
                     S'inscrire
                   </Link>
                 </div>
               )}
             </div>
 
-            {/* Mobile Menu Button */}
-            <button
-              data-mobile-menu-button
-              onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-gray-600 hover:text-orange-500"
-              aria-label="Menu"
-            >
-              {isMobileMenuOpen ? (
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+            {/* Mobile: search icon + hamburger */}
+            <div className="flex md:hidden items-center gap-1 ml-auto">
+              <button onClick={() => router.push('/search')} className="p-2 text-slate-500 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors" aria-label="Rechercher">
+                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
-              ) : (
-                <svg
-                  className="h-6 w-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              )}
-            </button>
+              </button>
+              <button
+                data-mobile-menu-button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="p-2 text-slate-500 hover:text-orange-500 hover:bg-orange-50 rounded-lg transition-colors"
+                aria-label="Menu"
+              >
+                {isMobileMenuOpen ? (
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden" />
+        <div
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
       )}
 
-      {/* Mobile Menu */}
+      {/* Mobile drawer */}
       <div
         ref={mobileMenuRef}
-        className={`fixed top-0 right-0 h-screen w-80 bg-white shadow-xl z-50 transform transition-transform duration-300 ease-in-out md:hidden ${
+        className={`fixed top-0 right-0 h-full w-[85vw] max-w-sm bg-white shadow-2xl z-50 flex flex-col transform transition-transform duration-300 ease-in-out md:hidden ${
           isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
-        <div className="flex flex-col h-full pt-16">
-          {/* Mobile Search Bar */}
-          <div className="p-4 border-b border-gray-200">
-            <form onSubmit={handleSearch} className="relative">
+        {/* Drawer header */}
+        <div className="flex items-center justify-between p-4 border-b border-slate-100">
+          <Image src="/bhmaths.png" alt="BHMaths" width={100} height={50} className="h-8 w-auto" />
+          <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-lg">
+            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        {/* Search */}
+        <div className="px-4 py-3 border-b border-slate-100">
+          <form onSubmit={handleSearch}>
+            <div className="relative">
+              <svg className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
               <input
-                ref={searchInputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={handleKeyDown}
-                onFocus={() => {
-                  if (suggestions.length > 0) {
-                    setShowSuggestions(true);
-                  }
-                }}
                 placeholder="Rechercher..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all"
               />
+            </div>
+          </form>
+        </div>
+
+        {/* Nav links */}
+        <div className="flex-1 overflow-y-auto py-3 px-3">
+          {NAV_ITEMS.map((item) => (
+            <div key={item.name} className="mb-1">
               <button
-                type="submit"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-orange-500"
+                onClick={() => setOpenMobileSection(openMobileSection === item.name ? null : item.name)}
+                className="w-full flex items-center justify-between px-3 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
               >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
+                <span>{item.name}</span>
+                <svg className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${openMobileSection === item.name ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
-            </form>
 
-            {/* Mobile Suggestions Dropdown */}
-            {showSuggestions && suggestions.length > 0 && (
-              <div className="mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                {suggestions.map((suggestion, index) => (
-                  <button
-                    key={`mobile-${suggestion.id}-${index}`}
-                    type="button"
-                    onClick={() => {
-                      handleSuggestionClick(suggestion);
-                      setIsMobileMenuOpen(false);
-                    }}
-                    className={`w-full text-left px-4 py-3 hover:bg-orange-50 transition-colors ${
-                      index === selectedIndex ? 'bg-orange-50' : ''
-                    } ${index !== suggestions.length - 1 ? 'border-b border-gray-100' : ''}`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-800">
-                          {suggestion.text}
-                        </p>
-                        <p className="text-xs text-gray-500 mt-1">
-                          {suggestion.levelName}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Menu Items */}
-          <div className="flex-1 overflow-y-auto p-4">
-            <nav className="space-y-2">
-              <Link
-                href="/livres"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
-              >
-                📚 Les Livres
-              </Link>
-              <Link
-                href="/contact"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
-              >
-                Contact
-              </Link>
-
-              {user ? (
-                <>
-                  <div className="border-t border-gray-200 my-4 pt-4">
-                    <div className="flex items-center space-x-3 px-4 py-3">
-                      <img
-                        src={user.avatar}
-                        alt={user.fullName || user.username}
-                        className="h-10 w-10 rounded-full"
-                      />
-                      <div>
-                        <p className="text-sm font-medium text-gray-800">
-                          {user.fullName || user.username}
-                        </p>
-                        <p className="text-xs text-gray-500">Utilisateur</p>
-                      </div>
-                    </div>
-                  </div>
-                  <Link
-                    href="/profile"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
-                  >
-                    Profil
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
-                  >
-                    Déconnexion
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/login"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-4 py-3 text-gray-700 hover:bg-orange-50 hover:text-orange-600 rounded-lg transition-colors"
-                  >
-                    Connexion
-                  </Link>
-                  <Link
-                    href="/register"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className="block px-4 py-3 bg-orange-500 text-white text-center rounded-lg hover:bg-orange-600 transition-colors"
-                  >
-                    S'inscrire
-                  </Link>
-                </>
+              {openMobileSection === item.name && (
+                <div className="ml-3 mb-2 pl-3 border-l-2 border-orange-100 space-y-0.5">
+                  {item.sections.map((sec) => (
+                    <Link
+                      key={sec.href}
+                      href={sec.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-between py-2 text-sm text-slate-600 hover:text-orange-600 transition-colors group"
+                    >
+                      <span className="font-medium">{sec.name}</span>
+                      <svg className="h-3.5 w-3.5 text-slate-300 group-hover:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </Link>
+                  ))}
+                </div>
               )}
-            </nav>
-          </div>
+            </div>
+          ))}
+
+          <Link href="/livres" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-semibold text-slate-700 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+            📚 Les Livres
+          </Link>
+          <Link href="/contact" onClick={() => setIsMobileMenuOpen(false)} className="flex items-center gap-2 px-3 py-3 rounded-xl text-sm font-medium text-slate-600 hover:bg-orange-50 hover:text-orange-600 transition-colors">
+            Contact
+          </Link>
+        </div>
+
+        {/* Auth section */}
+        <div className="p-4 border-t border-slate-100 bg-slate-50">
+          {user ? (
+            <div className="space-y-2">
+              <div className="flex items-center gap-3 px-3 py-2">
+                <img src={user.avatar} alt={user.fullName || user.username} className="h-9 w-9 rounded-full ring-2 ring-orange-100" />
+                <div>
+                  <p className="text-sm font-semibold text-slate-800">{user.fullName || user.username}</p>
+                  <p className="text-xs text-slate-400">Élève</p>
+                </div>
+              </div>
+              <Link href="/profile" onClick={() => setIsMobileMenuOpen(false)} className="block w-full text-center px-4 py-2.5 text-sm font-medium text-slate-700 bg-white rounded-xl border border-slate-200 hover:border-orange-300 transition-colors">
+                Mon profil
+              </Link>
+              <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full px-4 py-2.5 text-sm font-medium text-red-600 bg-red-50 rounded-xl hover:bg-red-100 transition-colors">
+                Déconnexion
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Link href="/login" onClick={() => setIsMobileMenuOpen(false)} className="text-center px-4 py-2.5 text-sm font-medium text-slate-700 bg-white rounded-xl border border-slate-200 hover:border-orange-300 transition-colors">
+                Connexion
+              </Link>
+              <Link href="/register" onClick={() => setIsMobileMenuOpen(false)} className="text-center px-4 py-2.5 text-sm font-semibold text-white bg-orange-500 rounded-xl hover:bg-orange-600 transition-colors">
+                S'inscrire
+              </Link>
+            </div>
+          )}
         </div>
       </div>
     </>

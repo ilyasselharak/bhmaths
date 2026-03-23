@@ -2,7 +2,6 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import TopHeader from '@/components/TopHeader'
 import MainHeader from '@/components/MainHeader'
-import NavHeader from '@/components/NavHeader'
 import { AuthProvider } from './context/AuthContext'
 import Footer from '@/components/Footer'
 
@@ -48,7 +47,6 @@ export default function RootLayout({ children }) {
         <AuthProvider>
           <TopHeader />
           <MainHeader />
-          <NavHeader />
           {children}
           <Footer />
         </AuthProvider>

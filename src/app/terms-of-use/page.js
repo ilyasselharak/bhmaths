@@ -1,210 +1,199 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Terms of Use | BHMaths',
-  description: 'Terms and conditions for using BHMaths educational platform',
+  title: "Conditions d'utilisation | BHMaths",
+  description: "Conditions d'utilisation de la plateforme éducative BHMaths",
 };
+
+const sections = [
+  {
+    num: '1',
+    title: 'Introduction',
+    content: (
+      <p className="text-slate-600 leading-relaxed text-sm">
+        Bienvenue sur BHMaths. En accédant et en utilisant notre site, vous acceptez d'être lié par ces conditions d'utilisation.
+        Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser nos services.
+      </p>
+    ),
+  },
+  {
+    num: '2',
+    title: 'Acceptation des conditions',
+    content: (
+      <p className="text-slate-600 leading-relaxed text-sm">
+        En utilisant la plateforme BHMaths, vous confirmez avoir lu et compris ces conditions et acceptez d'y être lié.
+        Nous nous réservons le droit de les modifier à tout moment ; vous serez notifié de tout changement significatif.
+      </p>
+    ),
+  },
+  {
+    num: '3',
+    title: "Utilisation du service",
+    content: (
+      <>
+        <h3 className="font-semibold text-slate-800 mb-2 mt-3 text-sm">Utilisations permises</h3>
+        <ul className="space-y-2 text-slate-600 text-sm">
+          {['Accéder aux contenus éducatifs disponibles', 'Télécharger les ressources pour usage personnel', 'Partager des liens vers nos pages'].map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+        <h3 className="font-semibold text-slate-800 mb-2 mt-4 text-sm">Utilisations interdites</h3>
+        <ul className="space-y-2 text-slate-600 text-sm">
+          {['Copier ou redistribuer le contenu à des fins commerciales', "Tenter d'accéder sans autorisation à nos systèmes", 'Utiliser le site de manière à perturber le service', 'Publier du contenu illégal ou offensant', 'Usurper l\'identité d\'une autre personne'].map((item) => (
+            <li key={item} className="flex items-start gap-2">
+              <div className="w-1.5 h-1.5 bg-red-400 rounded-full mt-2 flex-shrink-0" />
+              {item}
+            </li>
+          ))}
+        </ul>
+      </>
+    ),
+  },
+  {
+    num: '4',
+    title: 'Création de compte',
+    content: (
+      <ul className="space-y-2 text-slate-600 text-sm">
+        {['Fournir des informations exactes et complètes', 'Maintenir la sécurité de votre compte', 'Signaler immédiatement tout accès non autorisé', 'Être responsable de toutes les activités sous votre compte'].map((item) => (
+          <li key={item} className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    ),
+  },
+  {
+    num: '5',
+    title: 'Abonnements et paiements',
+    content: (
+      <ul className="space-y-2 text-slate-600 text-sm">
+        {['Vous acceptez de payer les frais indiqués', 'Les abonnements se renouvellent automatiquement sauf annulation', 'Vous pouvez annuler votre abonnement à tout moment', 'Aucun remboursement pour la période en cours', 'Nous nous réservons le droit de modifier les tarifs avec préavis'].map((item) => (
+          <li key={item} className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mt-2 flex-shrink-0" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    ),
+  },
+  {
+    num: '6',
+    title: 'Propriété intellectuelle',
+    content: (
+      <p className="text-slate-600 leading-relaxed text-sm">
+        Tout le contenu de la plateforme BHMaths, y compris les textes, images, vidéos et designs, est protégé par le droit d'auteur.
+        Vous ne pouvez pas copier, reproduire ou distribuer tout contenu sans notre autorisation écrite.
+      </p>
+    ),
+  },
+  {
+    num: '7',
+    title: 'Contenu utilisateur',
+    content: (
+      <p className="text-slate-600 leading-relaxed text-sm">
+        Si vous publiez du contenu sur notre plateforme, vous nous accordez une licence non exclusive pour l'utiliser.
+        Vous garantissez avoir le droit de publier ce contenu et qu'il ne viole pas les droits de tiers.
+      </p>
+    ),
+  },
+  {
+    num: '8',
+    title: 'Limitation de responsabilité',
+    content: (
+      <ul className="space-y-2 text-slate-600 text-sm">
+        {['Dommages directs ou indirects résultant de l\'utilisation', 'Interruptions de service ou erreurs techniques', 'Perte de données ou d\'informations', 'Résultats scolaires des utilisateurs'].map((item) => (
+          <li key={item} className="flex items-start gap-2">
+            <div className="w-1.5 h-1.5 bg-slate-300 rounded-full mt-2 flex-shrink-0" />
+            {item}
+          </li>
+        ))}
+      </ul>
+    ),
+  },
+  {
+    num: '9',
+    title: 'Résiliation',
+    content: (
+      <p className="text-slate-600 leading-relaxed text-sm">
+        Nous nous réservons le droit de suspendre ou de résilier votre accès à la plateforme à tout moment, sans préavis,
+        si vous violez ces conditions ou pour toute autre raison que nous jugeons appropriée.
+      </p>
+    ),
+  },
+  {
+    num: '10',
+    title: 'Modifications des conditions',
+    content: (
+      <p className="text-slate-600 leading-relaxed text-sm">
+        Nous pouvons modifier ces conditions à tout moment. Les changements seront publiés sur cette page avec une date de mise à jour.
+        Nous vous conseillons de consulter régulièrement cette page.
+      </p>
+    ),
+  },
+];
 
 export default function TermsOfUsePage() {
   return (
-    <main className="py-12">
-      <div className="bg-gradient-to-r from-orange-200 to-orange-400 text-black rounded-2xl py-16 mb-12 mx-4">
-        <div className="max-w-4xl mx-auto px-4 text-center">
-          <h1 className="text-3xl md:text-4xl font-bold mb-6">
-            Terms of Use
-          </h1>
-          <p className="text-lg md:text-xl opacity-90">
-            Terms and conditions for using BHMaths platform
-          </p>
+    <main>
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 to-slate-800 text-white py-20 px-4">
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-orange-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative max-w-3xl mx-auto text-center">
+          <p className="text-orange-400 font-semibold text-sm uppercase tracking-widest mb-3">Légal</p>
+          <h1 className="text-4xl md:text-5xl font-extrabold mb-4 tracking-tight text-white">Conditions d'utilisation</h1>
+          <p className="text-slate-300 text-lg">Conditions et règles d'utilisation de la plateforme BHMaths</p>
         </div>
-      </div>
+      </section>
 
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-xl shadow-lg p-8 md:p-12 space-y-8">
-          {/* Introduction */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">1. Introduction</h2>
-            <p className="text-gray-600 leading-relaxed">
-              Welcome to BHMaths educational platform. By accessing and using our website, you agree to be bound 
-              by these Terms of Use. If you do not agree to these terms, please do not use our site.
-            </p>
-          </section>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="p-8 md:p-10 space-y-8">
+            {sections.map((section) => (
+              <section key={section.num}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-7 h-7 bg-orange-500 text-white rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0">
+                    {section.num}
+                  </div>
+                  <h2 className="text-lg font-bold text-slate-900">{section.title}</h2>
+                </div>
+                {section.content}
+              </section>
+            ))}
 
-          {/* Acceptance of Terms */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">2. Acceptance of Terms</h2>
-            <p className="text-gray-600 leading-relaxed">
-              By using BHMaths platform, you acknowledge and agree that you have read and understood these 
-              terms and conditions, and that you agree to be bound by them. We reserve the right to modify 
-              these terms at any time, and you will be notified of any material changes.
-            </p>
-          </section>
+            {/* Contact */}
+            <section>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-7 h-7 bg-orange-500 text-white rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0">11</div>
+                <h2 className="text-lg font-bold text-slate-900">Contact</h2>
+              </div>
+              <div className="bg-slate-50 rounded-2xl border border-slate-100 p-5 space-y-2 text-sm">
+                <p className="text-slate-700">
+                  <span className="font-medium">Email :</span>{' '}
+                  <a href="mailto:contact@bhmaths.com" className="text-orange-500 hover:text-orange-600">contact@bhmaths.com</a>
+                </p>
+                <p className="text-slate-700">
+                  <span className="font-medium">Téléphone :</span>{' '}
+                  <a href="tel:+212629504107" className="text-orange-500 hover:text-orange-600">+212 629-504107</a>
+                </p>
+                <p className="text-slate-700"><span className="font-medium">Adresse :</span> Maroc</p>
+              </div>
+            </section>
 
-          {/* Use of Service */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">3. Use of Service</h2>
-            <h3 className="text-xl font-semibold text-gray-700 mb-3 mt-6">3.1 Permitted Use</h3>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              You may use BHMaths platform for personal educational purposes only. You are permitted to:
-            </p>
-            <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>Access available educational content</li>
-              <li>Download educational materials for personal use</li>
-              <li>Share links to our pages with others</li>
-            </ul>
-
-            <h3 className="text-xl font-semibold text-gray-700 mb-3 mt-6">3.2 Prohibited Use</h3>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              You are prohibited from:
-            </p>
-            <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>Copying or redistributing content for commercial purposes</li>
-              <li>Attempting unauthorized access to our systems</li>
-              <li>Using the site in any way that may harm or disrupt the service</li>
-              <li>Posting illegal or offensive content</li>
-              <li>Impersonating another person</li>
-            </ul>
-          </section>
-
-          {/* Account Registration */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">4. Account Registration</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              When creating an account on BHMaths, you agree to:
-            </p>
-            <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>Provide accurate and complete information</li>
-              <li>Maintain the security of your account and password</li>
-              <li>Immediately report any unauthorized use of your account</li>
-              <li>Be responsible for all activities that occur under your account</li>
-            </ul>
-          </section>
-
-          {/* Subscription and Payment */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">5. Subscriptions and Payment</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              If you choose to subscribe to one of our paid plans:
-            </p>
-            <ul className="list-disc list-inside text-gray-600 space-y-2">
-              <li>You agree to pay the fees stated</li>
-              <li>Subscriptions automatically renew unless cancelled</li>
-              <li>You may cancel your subscription at any time</li>
-              <li>No refunds are provided for the current period</li>
-              <li>We reserve the right to change prices with prior notice</li>
-            </ul>
-          </section>
-
-          {/* Intellectual Property */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">6. Intellectual Property</h2>
-            <p className="text-gray-600 leading-relaxed">
-              All content on BHMaths platform, including texts, images, videos, and designs, is protected 
-              by copyright and intellectual property rights. You may not copy, reproduce, or distribute any 
-              part of the content without our written permission.
-            </p>
-          </section>
-
-          {/* User Content */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">7. User Content</h2>
-            <p className="text-gray-600 leading-relaxed">
-              If you upload or post any content on our platform, you grant us a non-exclusive license to use 
-              this content. You warrant that you have the right to publish this content and that it does not 
-              infringe on any third party's rights.
-            </p>
-          </section>
-
-          {/* Limitation of Liability */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">8. Limitation of Liability</h2>
-            <p className="text-gray-600 leading-relaxed">
-              BHMaths shall not be liable for:
-            </p>
-            <ul className="list-disc list-inside text-gray-600 space-y-2 mt-4">
-              <li>Any direct or indirect damages resulting from use of the platform</li>
-              <li>Service interruptions or technical errors</li>
-              <li>Loss of data or information</li>
-              <li>Users' academic results</li>
-            </ul>
-          </section>
-
-          {/* Termination */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">9. Termination</h2>
-            <p className="text-gray-600 leading-relaxed">
-              We reserve the right to suspend or terminate your access to the platform at any time, without 
-              prior notice, if you violate these terms or for any other reason we deem appropriate.
-            </p>
-          </section>
-
-          {/* Changes to Terms */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">10. Changes to Terms</h2>
-            <p className="text-gray-600 leading-relaxed">
-              We reserve the right to modify these terms at any time. Changes will be posted on this page 
-              with an updated "Last Updated" date. You are advised to review this page regularly for any changes.
-            </p>
-            <p className="text-gray-600 leading-relaxed mt-4">
-              <strong>Last Updated :</strong> {new Date().toLocaleDateString('en-US', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-          </section>
-
-          {/* Contact */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">11. Contact</h2>
-            <p className="text-gray-600 leading-relaxed mb-4">
-              If you have any questions about these Terms of Use, you can contact us:
-            </p>
-            <div className="bg-gray-50 rounded-lg p-6 space-y-3">
-              <p className="text-gray-700">
-                <strong>Email :</strong>{' '}
-                <a href="mailto:contact@bhmaths.com" className="text-orange-500 hover:text-orange-600">
-                  contact@bhmaths.com
-                </a>
-              </p>
-              <p className="text-gray-700">
-                <strong>Phone :</strong>{' '}
-                <a href="tel:+212629504107" className="text-orange-500 hover:text-orange-600">
-                  +212 629-504107
-                </a>
-              </p>
-              <p className="text-gray-700">
-                <strong>Address :</strong> Morocco
-              </p>
+            <div className="pt-6 border-t border-slate-100">
+              <Link href="/" className="inline-flex items-center gap-2 text-sm text-slate-500 hover:text-orange-500 font-medium transition-colors">
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                Retour à l'accueil
+              </Link>
             </div>
-          </section>
-
-          {/* Back Link */}
-          <div className="mt-8 pt-8 border-t border-gray-200">
-            <Link
-              href="/"
-              className="inline-flex items-center text-orange-500 hover:text-orange-600 font-medium"
-            >
-              <svg
-                className="h-5 w-5 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 19l-7-7 7-7"
-                />
-              </svg>
-              Back to Home
-            </Link>
           </div>
         </div>
       </div>
     </main>
   );
 }
-
-
